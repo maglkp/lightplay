@@ -6,7 +6,6 @@ import {Component, HostListener, OnInit} from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  private animation;
   private keys = [];
   private speed = 2;
   private x = 50;
@@ -14,13 +13,15 @@ export class AppComponent implements OnInit {
   private velY = 0;
   private velX = 0;
   private friction = .8;
-  ctx;
-  canvas;
+  private ctx;
+  private canvas;
 
   ngOnInit() {
     this.canvas = <HTMLCanvasElement>document.getElementById('play-canvas');
     this.ctx = this.canvas.getContext('2d');
-    // this.animation = new CanvasAnimation(this.canvas);
+
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // this.drawSomeRectangles();
     this.update();
   }
 
@@ -56,21 +57,37 @@ export class AppComponent implements OnInit {
     this.velX *= this.friction;
     this.x += this.velX;
 
-    if (this.x >= 295) {
-      this.x = 295;
-    } else if (this.x <= 5) {
-      this.x = 5;
+    if (this.x >= 280) {
+      this.x = 280;
+    } else if (this.x <= 0) {
+      this.x = 0;
     }
 
-    if (this.y > 295) {
-      this.y = 295;
-    } else if (this.y <= 5) {
-      this.y = 5;
+    if (this.y > 280) {
+      this.y = 280;
+    } else if (this.y <= 0) {
+      this.y = 0;
     }
 
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.fillStyle = 'green';
+    // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillStyle = this.getRandomColor();
     this.ctx.fillRect(this.x, this.y, 20, 20);
+  }
+
+  drawSomeRectangles() {
+    for (let i = 0; i < 15; i++) {
+      for (let j = 0; j < 15; j++) {
+        this.ctx.fillStyle = this.getRandomColor();
+        this.ctx.fillRect(i * 20, j * 20, 20, 20);
+      }
+    }
+  }
+
+  getRandomColor() {
+    let r = 255 * Math.random() | 0,
+      g = 255 * Math.random() | 0,
+      b = 255 * Math.random() | 0;
+    return 'rgb(' + r + ',' + g + ',' + b + ')';
   }
 
   @HostListener('window:keyup', ['$event'])
@@ -81,27 +98,6 @@ export class AppComponent implements OnInit {
   @HostListener('window:keydown', ['$event'])
   keyDown(e: KeyboardEvent) {
     this.keys[e.keyCode] = true;
-  }
-
-  // @HostListener('window:keyup', ['$event'])
-  keyboardInput(event: KeyboardEvent) {
-    // PRESS LEFT ARROW OR 'A' KEY
-    if (event.keyCode === 37 || event.keyCode === 65) {
-      this.animation.x -= 3;
-    } else
-    // PRESS UP ARROW OR 'W' KEY
-    if (event.keyCode === 38 || event.keyCode === 87) {
-      this.animation.y -= 3;
-    } else
-    // PRESS RIGHT ARROW OR 'D' KEY
-    if (event.keyCode === 39 || event.keyCode === 68) {
-      this.animation.x += 3;
-      // console.log(this.animation.x);
-    } else
-    // PRESS DOWN ARROW OR 'S' KEY
-    if (event.keyCode === 40 || event.keyCode === 83) {
-      this.animation.y += 3;
-    }
   }
 }
 
