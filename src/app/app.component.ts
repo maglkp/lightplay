@@ -7,7 +7,7 @@ import {Component, HostListener, OnInit} from '@angular/core';
 })
 export class AppComponent implements OnInit {
   private keys = [];
-  private speed = 2;
+  private speed = 9000;
   private x = 50;
   private y = 50;
   private velY = 0;
@@ -87,7 +87,7 @@ export class AppComponent implements OnInit {
     let r = 255 * Math.random() | 0,
       g = 255 * Math.random() | 0,
       b = 255 * Math.random() | 0;
-    return 'rgb(' + r + ',' + g + ',' + b + ')';
+    return 'rgb(' + r + ',' + g + ',' + 0 + ')';
   }
 
   @HostListener('window:keyup', ['$event'])
