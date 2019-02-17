@@ -44,6 +44,9 @@ export class AppComponent implements OnInit {
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ];
 
+  // 1-red, 2-green, 3-blue, 4-white, 0-yellow
+  private colors: Map<number, number[]> = new Map([[1, [255, 0, 0]], [2, [0, 255, 0]], [3, [0, 0, 255]], [4, [255, 255, 255]], [0, [189, 204, 11]]]);
+
   ngOnInit() {
     this.canvas = <HTMLCanvasElement>document.getElementById('play-canvas');
     this.ctx = this.canvas.getContext('2d');
@@ -55,23 +58,25 @@ export class AppComponent implements OnInit {
   }
 
   drawScene() {
-    let mapWidth = 24;
-    let mapHeight = 24;
+    const mapWidth = 24;
+    const mapHeight = 24;
 
-    let posX = 22.;
-    let posY = 12.;
-    let dirX = -1.;
-    let dirY = 0.; // initial direction vector
-    let planeX = 0.;
-    let planeY = 0.66; // the 2d raycaster version of camera plane
-    let w = 512;
-    let h = 384;
+    const posX = 22.;
+    const posY = 12.;
+    const dirX = -1.;
+    const dirY = 0.; // initial direction vector
+    const planeX = 0.;
+    const planeY = 0.66; // the 2d raycaster version of camera plane
+    const w = 512;
+    const h = 384;
 
+    const aa = [2, 3];
+    console.log(aa);
     for (let x = 0; x < w; x++) {
 
-      let cameraX = 2 * x / w - 1; // x-coordinate in camera space
-      let rayDirX = dirX + planeX * cameraX;
-      let rayDirY = dirY + planeY * cameraX;
+      const cameraX = 2 * x / w - 1; // x-coordinate in camera space
+      const rayDirX = dirX + planeX * cameraX;
+      const rayDirY = dirY + planeY * cameraX;
       // which box of the map we're in
       let mapX = Math.floor(posX);
       let mapY = Math.floor(posY);
@@ -81,16 +86,16 @@ export class AppComponent implements OnInit {
       let sideDistY;
 
       // length of ray from one x or y-side to next x or y-side
-      let deltaDistX = Math.abs(1 / rayDirX);
-      let deltaDistY = Math.abs(1 / rayDirY);
+      const deltaDistX = Math.abs(1 / rayDirX);
+      const deltaDistY = Math.abs(1 / rayDirY);
       let perpWallDist;
 
 
       let stepX;
       let stepY;
 
-      let hit = 0; //was there a wall hit?
-      let side; //was a NS or a EW wall hit?
+      let hit = 0; // was there a wall hit?
+      let side; // was a NS or a EW wall hit?
 
       // calculate step and initial sideDist
       if (rayDirX < 0) {
@@ -132,7 +137,7 @@ export class AppComponent implements OnInit {
       }
 
       // Calculate height of line to draw on screen
-      let lineHeight = Math.floor(h / perpWallDist);
+      const lineHeight = Math.floor(h / perpWallDist);
 
       // calculate lowest and highest pixel to fill in current stripe
       let drawStart = -lineHeight / 2 + h / 2;
@@ -144,11 +149,14 @@ export class AppComponent implements OnInit {
         drawEnd = h - 1;
       }
 
-      //give x and y sides different brightness
-      // if (side === 1) {color = color / 2;}
+      let color = this.colors.get(this.worldMap[mapX][mapY]);
+      // give x and y sides different brightness
+      if (side === 1) {
+        color = [color[0] / 2, color[1] / 2, color[2] / 2];
+      }
 
-      //draw the pixels of the stripe as a vertical line
-      this.verLine(x, drawStart, drawEnd, null);
+      // draw the pixels of the stripe as a vertical line
+      this.verLine(x, drawStart, drawEnd, 'rgb(' + color[0] + ',' + color[1] + ',' + color[2] + ')');
     }
   }
 
@@ -212,6 +220,7 @@ export class AppComponent implements OnInit {
 
   verLine(x, drawStart, drawEnd, color) {
     this.ctx.beginPath();
+    this.ctx.strokeStyle = color;
     this.ctx.moveTo(x, drawStart);
     this.ctx.lineTo(x, drawEnd);
     this.ctx.closePath();
@@ -219,7 +228,7 @@ export class AppComponent implements OnInit {
   }
 
   getRandomColor() {
-    let r = 255 * Math.random() | 0,
+    const r = 255 * Math.random() | 0,
       g = 255 * Math.random() | 0,
       b = 255 * Math.random() | 0;
     return 'rgb(' + r + ',' + g + ',' + b + ')';
