@@ -7,7 +7,7 @@ import {Component, HostListener, OnInit} from '@angular/core';
 })
 export class AppComponent implements OnInit {
   private keys = [];
-  private speed = 9000;
+  private speed = .1;
   private x = 50;
   private y = 50;
   private velY = 0;
@@ -45,24 +45,25 @@ export class AppComponent implements OnInit {
     ];
 
   // 1-red, 2-green, 3-blue, 4-white, 0-yellow
-  private colors: Map<number, number[]> = new Map([[1, [255, 0, 0]], [2, [0, 255, 0]], [3, [0, 0, 255]], [4, [255, 255, 255]], [0, [189, 204, 11]]]);
+  private colors: Map<number, number[]> = new Map([[1, [255, 0, 0]], [2, [0, 255, 0]], [3, [0, 0, 255]],
+    [4, [255, 255, 255]], [0, [189, 204, 11]]]);
+  private posX = 22.;
+  private posY = 12.;
+  private mapWidth = 24;
+  private mapHeight = 24;
 
   ngOnInit() {
     this.canvas = <HTMLCanvasElement>document.getElementById('play-canvas');
     this.ctx = this.canvas.getContext('2d');
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // this.verLine(150, 0, 150, null);
-    // console.log(this.multi[0][0]);
-    this.drawScene();
+    // this.drawScene();
+    this.draw3dScene();
   }
 
   drawScene() {
-    const mapWidth = 24;
-    const mapHeight = 24;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    const posX = 22.;
-    const posY = 12.;
     const dirX = -1.;
     const dirY = 0.; // initial direction vector
     const planeX = 0.;
@@ -70,16 +71,14 @@ export class AppComponent implements OnInit {
     const w = 512;
     const h = 384;
 
-    const aa = [2, 3];
-    console.log(aa);
     for (let x = 0; x < w; x++) {
 
       const cameraX = 2 * x / w - 1; // x-coordinate in camera space
       const rayDirX = dirX + planeX * cameraX;
       const rayDirY = dirY + planeY * cameraX;
       // which box of the map we're in
-      let mapX = Math.floor(posX);
-      let mapY = Math.floor(posY);
+      let mapX = Math.floor(this.posX);
+      let mapY = Math.floor(this.posY);
 
       // length of ray from current position to next x or y-side
       let sideDistX;
@@ -90,7 +89,6 @@ export class AppComponent implements OnInit {
       const deltaDistY = Math.abs(1 / rayDirY);
       let perpWallDist;
 
-
       let stepX;
       let stepY;
 
@@ -100,17 +98,17 @@ export class AppComponent implements OnInit {
       // calculate step and initial sideDist
       if (rayDirX < 0) {
         stepX = -1;
-        sideDistX = (posX - mapX) * deltaDistX;
+        sideDistX = (this.posX - mapX) * deltaDistX;
       } else {
         stepX = 1;
-        sideDistX = (mapX + 1.0 - posX) * deltaDistX;
+        sideDistX = (mapX + 1.0 - this.posX) * deltaDistX;
       }
       if (rayDirY < 0) {
         stepY = -1;
-        sideDistY = (posY - mapY) * deltaDistY;
+        sideDistY = (this.posY - mapY) * deltaDistY;
       } else {
         stepY = 1;
-        sideDistY = (mapY + 1.0 - posY) * deltaDistY;
+        sideDistY = (mapY + 1.0 - this.posY) * deltaDistY;
       }
 
       // perform DDA
@@ -131,9 +129,9 @@ export class AppComponent implements OnInit {
         }
       }
       if (side === 0) {
-        perpWallDist = (mapX - posX + (1 - stepX) / 2) / rayDirX;
+        perpWallDist = (mapX - this.posX + (1 - stepX) / 2) / rayDirX;
       } else {
-        perpWallDist = (mapY - posY + (1 - stepY) / 2) / rayDirY;
+        perpWallDist = (mapY - this.posY + (1 - stepY) / 2) / rayDirY;
       }
 
       // Calculate height of line to draw on screen
@@ -160,8 +158,51 @@ export class AppComponent implements OnInit {
     }
   }
 
-  update() {
-    window.requestAnimationFrame(() => this.update());
+  draw3dScene() {
+    window.requestAnimationFrame(() => this.draw3dScene());
+
+    // U
+    if (this.keys[38]) {
+      if (this.velY > -this.speed) {
+        this.velY--;
+      }
+    }
+
+    // D
+    if (this.keys[40]) {
+      if (this.velY < this.speed) {
+        this.velY++;
+      }
+    }
+
+    // R
+    if (this.keys[39]) {
+      if (this.velX < this.speed) {
+        this.velX++;
+      }
+    }
+    // L
+    if (this.keys[37]) {
+      if (this.velX > -this.speed) {
+        this.velX--;
+      }
+    }
+
+    this.velY *= this.friction;
+    this.posY += this.velY;
+    this.velX *= this.friction;
+    this.posX += this.velX;
+
+    this.posX = Math.min(this.posX, this.mapWidth);
+    this.posX = Math.max(this.posX, 0);
+    this.posY = Math.min(this.posY, this.mapHeight);
+    this.posY = Math.max(this.posY, 0);
+
+    this.drawScene();
+  }
+
+  drawRectangleInBox() {
+    window.requestAnimationFrame(() => this.drawRectangleInBox());
 
     if (this.keys[38]) {
       if (this.velY > -this.speed) {
@@ -204,12 +245,12 @@ export class AppComponent implements OnInit {
       this.y = 0;
     }
 
-    // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.fillStyle = this.getRandomColor();
     this.ctx.fillRect(this.x, this.y, 20, 20);
   }
 
-  drawSomeRectangles() {
+  drawRectangles() {
     for (let i = 0; i < 15; i++) {
       for (let j = 0; j < 15; j++) {
         this.ctx.fillStyle = this.getRandomColor();
