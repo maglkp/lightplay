@@ -86,6 +86,7 @@ export class AppComponent implements OnInit {
       let sideDistX;
       let sideDistY;
 
+
       // length of ray from one x or y-side to next x or y-side
       const deltaDistX = Math.abs(1 / rayDirX);
       const deltaDistY = Math.abs(1 / rayDirY);
