@@ -57,8 +57,10 @@ export class AppComponent implements OnInit {
     this.ctx = this.canvas.getContext('2d');
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // this.drawRectangleInBox();
+    this.drawRectangles();
     // this.drawScene();
-    this.draw3dScene();
+    // this.draw3dScene();
   }
 
   drawScene() {
